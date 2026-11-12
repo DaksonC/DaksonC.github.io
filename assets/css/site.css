@@ -1,0 +1,553 @@
+/*
+ * daksonc.github.io: DOS terminal look, WCAG 2.2 AA, mobile first.
+ * Dark (default), contrast on #000: --fg 15.6:1, --dim 7.5:1, --accent 13.7:1.
+ * Light ("dot-matrix printout": black and grey ink, amber only for links and labels),
+ * contrast on #f4f1e6: --fg 15.4:1, --dim 5.9:1, --accent 6.6:1.
+ */
+
+@font-face {
+  font-family: "VT323";
+  src: url("../fonts/VT323-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  --bg: #000;
+  --fg: #33ff66;
+  --dim: #22b24a;
+  --accent: #ffc94d;
+  --placeholder: #9a9a9a; /* grey, 7.5:1 */
+  --font: "VT323", ui-monospace, "Cascadia Mono", "Consolas", "Courier New", monospace;
+  --gutter: 1rem;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f1e6;
+  --fg: #1a1a1a;
+  --dim: #5c5c5c;
+  --accent: #7a4a00;
+  --placeholder: #6e6e6e; /* lightest grey that still meets 4.5:1 on paper */
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  scroll-padding-top: 1rem;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: clamp(1.25rem, 1.1rem + 0.5vw, 1.375rem)/1.5 var(--font); /* VT323 is narrow: 20px on phones, 22px on desktop */
+  overflow-wrap: anywhere; /* reflow at 320px, long URLs included */
+}
+
+.wrap {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ---------- Text ---------- */
+
+h1,
+h2,
+h3 {
+  font-weight: normal;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: clamp(2.125rem, 1.5rem + 3vw, 2.75rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(1.625rem, 1.4rem + 1vw, 1.875rem);
+  margin-top: clamp(2.25rem, 1.5rem + 3vw, 3rem);
+  padding-bottom: 0.25rem;
+  border-bottom: 1px dashed var(--dim);
+}
+
+h3 {
+  font-size: clamp(1.375rem, 1.25rem + 0.5vw, 1.5rem);
+  margin-top: 1.5rem;
+}
+
+p,
+ul,
+dl {
+  margin: 0 0 1rem;
+}
+
+.prompt,
+.dim {
+  color: var(--dim);
+}
+
+.key {
+  color: var(--accent);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-style: double;
+}
+
+/* DOS-style focus: green/black inversion, always visible. */
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  background: var(--fg);
+  color: var(--bg);
+  text-shadow: none;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Programmatic focus targets (skip link, command line): no inversion. */
+main:focus,
+h1:focus,
+h2:focus {
+  outline: none;
+  background: none;
+  color: inherit;
+}
+
+/* Lists rendered as terminal output. */
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.list > li {
+  padding-left: 2ch; /* matches the 2-character "> " marker */
+  text-indent: -2ch;
+}
+
+.list > li::before {
+  content: "> "; /* fallback for browsers without alt text */
+  content: "> " / ""; /* decorative: not read by screen readers */
+  color: var(--dim);
+}
+
+/* ---------- Utilities ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: -10rem;
+  z-index: 10;
+  padding: 0.25rem 0.75rem;
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.skip:focus {
+  top: 0.5rem;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- Header and DOS menu ---------- */
+
+/*
+ * Wide screens: title and controls on the first row, menu and command line below.
+ * The panel wrapper is transparent to the grid (display: contents) until the
+ * hamburger takes over on small screens.
+ */
+.site-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 1.5rem;
+}
+
+.site-header .title {
+  margin: 0;
+  padding: 0.75rem 0;
+  color: var(--dim);
+}
+
+.panel {
+  display: contents;
+}
+
+.panel .menu,
+.panel .cli-wrap {
+  grid-column: 1 / -1;
+}
+
+.panel .menu {
+  border-top: 1px solid var(--dim);
+}
+
+.menu-toggle {
+  display: none; /* only shown by the small-screen rules, and only with JS */
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.lang {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lang a[aria-current="page"] {
+  color: var(--bg);
+  background: var(--fg);
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  min-height: 24px; /* WCAG 2.5.8 target size */
+}
+
+.menu ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem clamp(0.75rem, 3vw, 1.5rem);
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu a {
+  display: inline-block;
+  min-height: 24px;
+}
+
+/* ---------- Command prompt (JS only) ---------- */
+
+.cli {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  margin-top: 1rem;
+}
+
+.cli input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed var(--dim);
+  caret-color: var(--fg);
+}
+
+.cli input::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
+
+.cli input:focus-visible {
+  background: transparent;
+  color: var(--fg);
+  outline-offset: 4px;
+}
+
+.cli-output p {
+  margin: 0;
+  color: var(--dim);
+}
+
+/* ---------- Hero ---------- */
+
+/* Phones and tablets: name, drawing, text. Wide screens: text left, drawing right. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); /* never let the <pre> widen the page */
+  grid-template-areas: "intro" "art" "about";
+  column-gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.hero .intro {
+  grid-area: intro;
+}
+
+.hero .about {
+  grid-area: about;
+}
+
+.hero figure {
+  grid-area: art;
+  justify-self: center;
+  margin: 0 0 1.25rem;
+}
+
+@media (min-width: 64rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "intro art" "about art";
+    grid-template-rows: auto 1fr;
+    margin-top: 2rem;
+  }
+
+  .hero figure {
+    align-self: center;
+    margin: 0;
+  }
+}
+
+.ascii {
+  margin: 0;
+  padding-bottom: 0.25em; /* keep the underscores of the last row visible */
+  overflow: hidden;
+  font-family: var(--font); /* <pre> would otherwise fall back to the wider UA monospace */
+  line-height: 1;
+  color: var(--dim);
+  /* 43 columns x 0.4em VT323 advance; scales down to fit 320px. */
+  font-size: clamp(0.5rem, 4.5vw, 1.5rem);
+}
+
+.tagline {
+  font-size: clamp(1.375rem, 1.25rem + 0.5vw, 1.5rem);
+}
+
+/* ---------- Experience ---------- */
+
+.job {
+  margin-bottom: 2rem;
+}
+
+.meta {
+  margin: 0 0 0.5rem;
+  color: var(--dim);
+}
+
+.car {
+  margin: 0;
+}
+
+.car dt {
+  color: var(--accent);
+}
+
+.car dd {
+  margin: 0 0 0.5rem 2ch;
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  margin-top: 4rem;
+  padding: 1rem 0 4rem; /* room for the back-to-top button */
+  border-top: 1px solid var(--dim);
+  color: var(--dim);
+}
+
+/* ---------- Back to top: discreet, bottom right; JS hides it while the header is visible ---------- */
+
+.to-top {
+  position: fixed;
+  right: var(--gutter);
+  bottom: var(--gutter);
+  z-index: 5;
+  padding: 0 0.5rem;
+  font-size: 1.125rem;
+  color: var(--dim);
+  background: var(--bg);
+  border: 1px solid var(--dim);
+  text-decoration: none;
+}
+
+.to-top:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.to-top.is-off {
+  visibility: hidden; /* also removes it from the tab order */
+  opacity: 0;
+}
+
+.motion .to-top.ready {
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.motion {
+  scroll-behavior: smooth;
+}
+
+/* ---------- Small screens: everything in the header folds into [MENU] ---------- */
+
+@media (max-width: 40rem) {
+  .site-header {
+    border-bottom: 1px solid var(--dim);
+  }
+
+  .has-menu .menu-toggle {
+    display: inline-block;
+    padding: 0 0.25rem;
+  }
+
+  .has-menu .menu-toggle[aria-expanded="true"] {
+    color: var(--bg);
+    background: var(--accent);
+  }
+
+  .has-menu .panel {
+    display: none;
+    grid-column: 1 / -1;
+    padding-bottom: 0.75rem;
+  }
+
+  .has-menu .panel.open {
+    display: block;
+  }
+
+  .has-menu .panel .menu {
+    border-top: 1px dashed var(--dim);
+  }
+
+  /* One section per line: big, easy tap targets. */
+  .has-menu .menu ul {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .has-menu .controls {
+    padding: 0.25rem 0 0.75rem;
+  }
+
+}
+
+/* Without JS there is no [MENU]: the header just wraps; drop the decorative prompt on tiny screens. */
+@media (max-width: 30rem) {
+  :root:not(.has-menu) .site-header .title {
+    display: none;
+  }
+}
+
+/* The command line is an optional extra; on touch phones the on-screen keyboard makes it a chore. */
+@media (max-width: 40rem) and (pointer: coarse) {
+  .cli-wrap {
+    display: none;
+  }
+}
+
+/* ---------- Effects: only with JS, [FX: ON] and allowed motion. Glow and scanlines are dark-only. ---------- */
+
+.fx:not([data-theme="light"]) body {
+  text-shadow: 0 0 4px rgba(51, 255, 102, 0.35);
+}
+
+/* Subtle scanlines that never sit on top of interaction. */
+.fx:not([data-theme="light"]) body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.12) 2px 3px);
+}
+
+/* 1 blink per second: well under the 3 flashes/s limit. */
+.motion .cursor {
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: 2rem var(--gutter);
+  background: var(--bg);
+}
+
+.boot pre {
+  margin: 0;
+  font: inherit;
+  white-space: pre-wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Print ---------- */
+
+@media print {
+  :root {
+    --bg: #fff;
+    --fg: #000;
+    --dim: #333;
+    --accent: #000;
+  }
+
+  .skip,
+  .controls,
+  .menu,
+  .cli-wrap,
+  .to-top,
+  .hero figure,
+  .cursor {
+    display: none !important;
+  }
+
+  .fx:not([data-theme="light"]) body {
+    text-shadow: none;
+  }
+
+  .fx:not([data-theme="light"]) body::after {
+    display: none;
+  }
+}
