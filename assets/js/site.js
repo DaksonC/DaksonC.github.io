@@ -60,7 +60,7 @@
   /* ---------- Visual effects switch: [FX: ON/OFF] ---------- */
 
   // Glow and scanlines are not motion, so FX defaults to on; reduced motion only stops the animations.
-  let fx = store.get('fx') === 'on' ? 'on' : 'off'; // effects are opt-in: glow blurs the text
+  let fx = store.get('fx') === 'off' ? 'off' : 'on';
   const motionAllowed = () => fx === 'on' && !reducedMotion.matches;
 
   /** MediaQueryList change listener, with the pre-Safari-14 fallback. */

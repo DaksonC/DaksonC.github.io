@@ -7,7 +7,7 @@ Architecture follows **ADR-001 — Arquitetura do site pessoal profissional**: p
 ```
 index.html               English page (main audience)
 pt/index.html            Portuguese page
-assets/css/site.css      Terminal look, WCAG 2.2 AA, CRT effects (opt-in: off until the visitor picks [FX: ON])
+assets/css/site.css      Terminal look, WCAG 2.2 AA, CRT effects (only with [FX: ON])
 assets/js/site.js        Progressive enhancement: boot screen, ASCII developer scene, FX and light/dark switches, optional command line
 assets/js/theme.js       Applies the saved light theme before first paint (no dark flash)
 assets/fonts/            VT323 (SIL Open Font License, see OFL.txt)
