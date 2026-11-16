@@ -10,7 +10,9 @@
   const root = document.documentElement;
   const lang = root.lang.startsWith('pt') ? 'pt' : 'en';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const SECTIONS = ['whoami', 'skills', 'experience', 'teamwork', 'education', 'contact'];
+  const SECTIONS = ['whoami', 'skills', 'experience', 'projects', 'teamwork', 'education', 'contact'];
+  // Portuguese names accepted on the command line (ADR-002); section ids stay in English.
+  const ALIASES = new Map([['projetos', 'projects']]);
 
   const STRINGS = {
     en: {
@@ -36,7 +38,7 @@
         'Carregando PERFIL.SYS .... OK',
         'C:\\> whoami',
       ],
-      help: `Comandos: ${SECTIONS.join(', ')}, fx on|off, theme light|dark, lang en|pt, clear, help`,
+      help: `Comandos: ${SECTIONS.map((id) => (id === 'projects' ? 'projects (projetos)' : id)).join(', ')}, fx on|off, theme light|dark, lang en|pt, clear, help`,
       goto: (id) => `Indo para ${id}.`,
       fx: (state) => `Efeitos visuais ${state === 'on' ? 'ligados' : 'desligados'}.`,
       theme: (t) => `Tema ${t === 'light' ? 'claro' : 'escuro'} ativado.`,
@@ -294,7 +296,8 @@
     }
 
     function run(raw) {
-      const [cmd, arg] = raw.trim().toLowerCase().split(/\s+/);
+      const [word, arg] = raw.trim().toLowerCase().split(/\s+/);
+      const cmd = ALIASES.get(word) || word;
       if (!cmd) return;
       print(`C:\\> ${raw.trim()}`, true);
 

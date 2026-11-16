@@ -29,6 +29,7 @@ Content is duplicated in two HTML files on purpose (ADR-001 §5). For every cont
 - [ ] Edit `index.html` **and** `pt/index.html` with the same structure.
 - [ ] If the hero ASCII art (`renderScene` in site.js) changes, update the static `<pre id="hero-art">` in both pages.
 - [ ] Rebuild the résumés: `pip install reportlab && python3 scripts/build_resume.py`.
+- [ ] `projects` section (ADR-002): keep the quicknode-cli description in sync with new releases; always write `quicknode-cli` and link the package with its `@10565/` scope.
 - [ ] Never publish phone number, address, tokens or private files.
 - [ ] Keep the homepage under 100 KB (font not included).
 - [ ] Run the checks below.
